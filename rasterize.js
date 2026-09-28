@@ -179,33 +179,37 @@ function setupShaders() {
 // render the loaded model
 function renderTriangles() {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT); // clear frame/depth buffers
-    
-    // define the modeling matrix for the first set 
-    inputTriangles[0].mMatrix = mat4.create(); // modeling mat for tri set
-    var setCenter = vec3.fromValues(.25,.75,0);  // center coords of tri set 
-    mat4.fromTranslation(inputTriangles[0].mMatrix,vec3.negate(vec3.create(),setCenter)); // translate to origin
-    mat4.multiply(inputTriangles[0].mMatrix,
-                  mat4.fromRotation(mat4.create(),Math.PI/2,vec3.fromValues(0,0,1)),
-                  inputTriangles[0].mMatrix); // rotate 90 degs
-    mat4.multiply(inputTriangles[0].mMatrix,
-                  mat4.fromTranslation(mat4.create(),setCenter),
-                  inputTriangles[0].mMatrix); // move back to center
-        
-    // define the modeling matrix for the second set
-    inputTriangles[1].mMatrix = mat4.create();
-    
-    for (var whichTriSet=0; whichTriSet<numTriangleSets; whichTriSet++) { 
-        
-        // pass modeling matrix for set to shadeer
+
+    // center of the canvas in world space (middle of the default window)
+    var canvasCenter = vec3.fromValues(
+        (WIN_LEFT + WIN_RIGHT) / 2,
+        (WIN_BOTTOM + WIN_TOP) / 2,
+        WIN_Z);
+
+    // build one matrix: T(center) * R(45deg about z) * T(-center)
+    var rotateMatrix = mat4.create();
+    mat4.fromTranslation(rotateMatrix, vec3.negate(vec3.create(), canvasCenter)); // move center to origin
+    mat4.multiply(rotateMatrix,
+                  mat4.fromRotation(mat4.create(), Math.PI / 4, vec3.fromValues(0, 0, 1)),
+                  rotateMatrix); // rotate 45 degs
+    mat4.multiply(rotateMatrix,
+                  mat4.fromTranslation(mat4.create(), canvasCenter),
+                  rotateMatrix); // move back
+
+    // give every set the same modeling matrix
+    for (var whichTriSet = 0; whichTriSet < numTriangleSets; whichTriSet++) {
+        inputTriangles[whichTriSet].mMatrix = mat4.clone(rotateMatrix);
+
+        // pass modeling matrix for set to shader
         gl.uniformMatrix4fv(modelMatrixULoc, false, inputTriangles[whichTriSet].mMatrix);
 
         // vertex buffer: activate and feed into vertex shader
-        gl.bindBuffer(gl.ARRAY_BUFFER,vertexBuffers[whichTriSet]); // activate
-        gl.vertexAttribPointer(vertexPositionAttrib,3,gl.FLOAT,false,0,0); // feed
+        gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffers[whichTriSet]); // activate
+        gl.vertexAttribPointer(vertexPositionAttrib, 3, gl.FLOAT, false, 0, 0); // feed
 
         // triangle buffer: activate and render
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,triangleBuffers[whichTriSet]); // activate
-        gl.drawElements(gl.TRIANGLES,3*triSetSizes[whichTriSet],gl.UNSIGNED_SHORT,0); // render
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, triangleBuffers[whichTriSet]); // activate
+        gl.drawElements(gl.TRIANGLES, 3 * triSetSizes[whichTriSet], gl.UNSIGNED_SHORT, 0); // render
     } // end for each tri set
 } // end render triangles
 
