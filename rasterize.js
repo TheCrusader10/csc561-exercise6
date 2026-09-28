@@ -180,30 +180,16 @@ function setupShaders() {
 function renderTriangles() {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT); // clear frame/depth buffers
     
-    var center = vec3.fromValues(.5,.5,0); // canvas center
-
-    // set 0 (triangle): rotate 45 degs about canvas center
-    inputTriangles[0].mMatrix = mat4.create();
-    mat4.fromTranslation(inputTriangles[0].mMatrix,vec3.negate(vec3.create(),center)); // translate to origin
+    // define the modeling matrix for the first set 
+    inputTriangles[0].mMatrix = mat4.create(); // modeling mat for tri set
+    var setCenter = vec3.fromValues(.25,.75,0);  // center coords of tri set 
+    mat4.fromTranslation(inputTriangles[0].mMatrix,vec3.negate(vec3.create(),setCenter)); // translate to origin
     mat4.multiply(inputTriangles[0].mMatrix,
-                  mat4.fromRotation(mat4.create(),Math.PI/4,vec3.fromValues(0,0,1)),
-                  inputTriangles[0].mMatrix); // rotate 45 degs
+                  mat4.fromRotation(mat4.create(),Math.PI/2,vec3.fromValues(0,0,1)),
+                  inputTriangles[0].mMatrix); // rotate 90 degs
     mat4.multiply(inputTriangles[0].mMatrix,
-                  mat4.fromTranslation(mat4.create(),center),
-                  inputTriangles[0].mMatrix); // move back
-
-    // set 1 (square): same, plus double size
-    inputTriangles[1].mMatrix = mat4.create();
-    mat4.fromTranslation(inputTriangles[1].mMatrix,vec3.negate(vec3.create(),center));
-    mat4.multiply(inputTriangles[1].mMatrix,
-                  mat4.fromScaling(mat4.create(),vec3.fromValues(2,2,1)),
-                  inputTriangles[1].mMatrix); // double size
-    mat4.multiply(inputTriangles[1].mMatrix,
-                  mat4.fromRotation(mat4.create(),Math.PI/4,vec3.fromValues(0,0,1)),
-                  inputTriangles[1].mMatrix); // rotate 45 degs
-    mat4.multiply(inputTriangles[1].mMatrix,
-                  mat4.fromTranslation(mat4.create(),center),
-                  inputTriangles[1].mMatrix); // move back
+                  mat4.fromTranslation(mat4.create(),setCenter),
+                  inputTriangles[0].mMatrix); // move back to center
         
     // define the modeling matrix for the second set
     inputTriangles[1].mMatrix = mat4.create();
