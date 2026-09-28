@@ -185,9 +185,11 @@ function renderTriangles() {
     var setCenter = vec3.fromValues(.25,.75,0);  // center coords of tri set 
     mat4.fromTranslation(inputTriangles[0].mMatrix,vec3.negate(vec3.create(),setCenter)); // translate to origin
     mat4.multiply(inputTriangles[0].mMatrix,
-                  mat4.fromRotation(mat4.create(),Math.PI/2,vec3.fromValues(0,0,1)),
-                  inputTriangles[0].mMatrix); // rotate 90 degs
+                  mat4.fromRotation(mat4.create(),Math.PI/4,vec3.fromValues(0,0,1)), // rotate 45 degs
+                  inputTriangles[0].mMatrix);
     mat4.multiply(inputTriangles[0].mMatrix,
+                  mat4.multiply(m,mat4.fromRotation(mat4.create(),Math.PI/4,vec3.fromValues(0,0,1)),m); // rotate 45 degs
+                  mat4.multiply(m,mat4.fromScaling(mat4.create(),vec3.fromValues(2,2,1)),m); // double size
                   mat4.fromTranslation(mat4.create(),setCenter),
                   inputTriangles[0].mMatrix); // move back to center
         
