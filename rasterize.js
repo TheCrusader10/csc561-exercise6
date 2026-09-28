@@ -180,25 +180,28 @@ function setupShaders() {
 function renderTriangles() {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT); // clear frame/depth buffers
 
-    // center of the canvas in world space (middle of the default window)
-    var canvasCenter = vec3.fromValues(
-        (WIN_LEFT + WIN_RIGHT) / 2,
-        (WIN_BOTTOM + WIN_TOP) / 2,
-        WIN_Z);
+    var zAxis = vec3.fromValues(0, 0, 1);
 
-    // build one matrix: T(center) * R(45deg about z) * T(-center)
-    var rotateMatrix = mat4.create();
-    mat4.fromTranslation(rotateMatrix, vec3.negate(vec3.create(), canvasCenter)); // move center to origin
-    mat4.multiply(rotateMatrix,
-                  mat4.fromRotation(mat4.create(), Math.PI / 4, vec3.fromValues(0, 0, 1)),
-                  rotateMatrix); // rotate 45 degs
-    mat4.multiply(rotateMatrix,
-                  mat4.fromTranslation(mat4.create(), canvasCenter),
-                  rotateMatrix); // move back
+    // set 0 (triangle): M = T(dest) * R(90+45 deg) * T(-center)
+    var triCenter = vec3.fromValues(0.25, 0.75, 0);   // original rotation center of the set
+    var triDest   = vec3.fromValues(-0.75, -0.25, 0); // where that center ends up
+    var m0 = mat4.create();
+    mat4.translate(m0, m0, triDest);                          // move to final position
+    mat4.rotate(m0, m0, Math.PI / 2 + Math.PI / 4, zAxis);    // original 90 deg + 45 deg
+    mat4.translate(m0, m0, vec3.negate(vec3.create(), triCenter)); // center to origin
+    inputTriangles[0].mMatrix = m0;
 
-    // give every set the same modeling matrix
+    // set 1 (square): M = T(dest) * S(2) * R(45 deg) * T(-center)
+    var sqCenter = vec3.fromValues(0.25, 0.25, 0);
+    var sqDest   = vec3.fromValues(-0.25, -0.5, 0);
+    var m1 = mat4.create();
+    mat4.translate(m1, m1, sqDest);
+    mat4.scale(m1, m1, vec3.fromValues(2, 2, 1));             // double the size
+    mat4.rotate(m1, m1, Math.PI / 4, zAxis);                  // 45 deg
+    mat4.translate(m1, m1, vec3.negate(vec3.create(), sqCenter));
+    inputTriangles[1].mMatrix = m1;
+
     for (var whichTriSet = 0; whichTriSet < numTriangleSets; whichTriSet++) {
-        inputTriangles[whichTriSet].mMatrix = mat4.clone(rotateMatrix);
 
         // pass modeling matrix for set to shader
         gl.uniformMatrix4fv(modelMatrixULoc, false, inputTriangles[whichTriSet].mMatrix);
